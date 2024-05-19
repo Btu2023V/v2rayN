@@ -86,6 +86,7 @@ namespace v2rayN.ViewModels
         public ReactiveCommand<Unit, Unit> AddVlessServerCmd { get; }
         public ReactiveCommand<Unit, Unit> AddShadowsocksServerCmd { get; }
         public ReactiveCommand<Unit, Unit> AddSocksServerCmd { get; }
+        public ReactiveCommand<Unit, Unit> AddHttpServerCmd { get; }
         public ReactiveCommand<Unit, Unit> AddTrojanServerCmd { get; }
         public ReactiveCommand<Unit, Unit> AddHysteria2ServerCmd { get; }
         public ReactiveCommand<Unit, Unit> AddTuicServerCmd { get; }
@@ -142,7 +143,8 @@ namespace v2rayN.ViewModels
         public ReactiveCommand<Unit, Unit> GlobalHotkeySettingCmd { get; }
         public ReactiveCommand<Unit, Unit> RebootAsAdminCmd { get; }
         public ReactiveCommand<Unit, Unit> ClearServerStatisticsCmd { get; }
-        public ReactiveCommand<Unit, Unit> ImportOldGuiConfigCmd { get; }
+        public ReactiveCommand<Unit, Unit> OpenTheFileLocationCmd { get; }
+        //public ReactiveCommand<Unit, Unit> ImportOldGuiConfigCmd { get; }
 
         //CheckUpdate
         public ReactiveCommand<Unit, Unit> CheckUpdateNCmd { get; }
@@ -333,6 +335,10 @@ namespace v2rayN.ViewModels
             {
                 EditServer(true, EConfigType.Socks);
             });
+            AddHttpServerCmd = ReactiveCommand.Create(() =>
+            {
+                EditServer(true, EConfigType.Http);
+            });
             AddTrojanServerCmd = ReactiveCommand.Create(() =>
             {
                 EditServer(true, EConfigType.Trojan);
@@ -498,10 +504,14 @@ namespace v2rayN.ViewModels
                 _statistics?.ClearAllServerStatistics();
                 RefreshServers();
             });
-            ImportOldGuiConfigCmd = ReactiveCommand.Create(() =>
+            OpenTheFileLocationCmd = ReactiveCommand.Create(() =>
             {
-                ImportOldGuiConfig();
+                Utils.ProcessStart("Explorer", $"/select,{Utils.GetConfigPath()}");
             });
+            //ImportOldGuiConfigCmd = ReactiveCommand.Create(() =>
+            //{
+            //    ImportOldGuiConfig();
+            //});
 
             //CheckUpdate
             CheckUpdateNCmd = ReactiveCommand.Create(() =>
@@ -1016,10 +1026,10 @@ namespace v2rayN.ViewModels
         {
             ShowHideWindow(false);
 
-            var dpiXY = Utils.GetDpiXY(Application.Current.MainWindow);
+            var dpiXY = QRCodeHelper.GetDpiXY(Application.Current.MainWindow);
             string result = await Task.Run(() =>
             {
-                return Utils.ScanScreen(dpiXY.Item1, dpiXY.Item2);
+                return QRCodeHelper.ScanScreen(dpiXY.Item1, dpiXY.Item2);
             });
 
             ShowHideWindow(true);
@@ -1417,32 +1427,32 @@ namespace v2rayN.ViewModels
             catch { }
         }
 
-        private void ImportOldGuiConfig()
-        {
-            if (UI.OpenFileDialog(out string fileName,
-                "guiNConfig|*.json|All|*.*") != true)
-            {
-                return;
-            }
-            if (Utils.IsNullOrEmpty(fileName))
-            {
-                return;
-            }
+        //private void ImportOldGuiConfig()
+        //{
+        //    if (UI.OpenFileDialog(out string fileName,
+        //        "guiNConfig|*.json|All|*.*") != true)
+        //    {
+        //        return;
+        //    }
+        //    if (Utils.IsNullOrEmpty(fileName))
+        //    {
+        //        return;
+        //    }
 
-            var ret = ConfigHandler.ImportOldGuiConfig(_config, fileName);
-            if (ret == 0)
-            {
-                RefreshRoutingsMenu();
-                InitSubscriptionView();
-                RefreshServers();
-                Reload();
-                _noticeHandler?.Enqueue(ResUI.OperationSuccess);
-            }
-            else
-            {
-                _noticeHandler?.Enqueue(ResUI.OperationFailed);
-            }
-        }
+        //    var ret = ConfigHandler.ImportOldGuiConfig(_config, fileName);
+        //    if (ret == 0)
+        //    {
+        //        RefreshRoutingsMenu();
+        //        InitSubscriptionView();
+        //        RefreshServers();
+        //        Reload();
+        //        _noticeHandler?.Enqueue(ResUI.OperationSuccess);
+        //    }
+        //    else
+        //    {
+        //        _noticeHandler?.Enqueue(ResUI.OperationFailed);
+        //    }
+        //}
 
         #endregion Setting
 
@@ -1842,7 +1852,7 @@ namespace v2rayN.ViewModels
         {
             var theme = _paletteHelper.GetTheme();
 
-            theme.SetBaseTheme(isDarkTheme ? Theme.Dark : Theme.Light);
+            theme.SetBaseTheme(isDarkTheme ? BaseTheme.Dark : BaseTheme.Light);
             _paletteHelper.SetTheme(theme);
 
             Utils.SetDarkBorder(Application.Current.MainWindow, isDarkTheme);

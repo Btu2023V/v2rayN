@@ -264,7 +264,12 @@ namespace v2rayN.Handler
 
         private static string GetIpv6(string address)
         {
-            return Utils.IsIpv6(address) ? $"[{address}]" : address;
+            if (Utils.IsIpv6(address))
+            {
+                // 检查地址是否已经被方括号包围，如果没有，则添加方括号
+                return address.StartsWith('[') && address.EndsWith(']') ? address : $"[{address}]";
+            }
+            return address;  // 如果不是IPv6地址，直接返回原地址
         }
 
         private static int GetStdTransport(ProfileItem item, string? securityDef, ref Dictionary<string, string> dicQuery)
@@ -982,7 +987,7 @@ namespace v2rayN.Handler
                     break;
 
                 case nameof(ETransport.grpc):
-                    item.requestHost = Utils.UrlDecode(query["authority"] ?? ""); 
+                    item.requestHost = Utils.UrlDecode(query["authority"] ?? "");
                     item.path = Utils.UrlDecode(query["serviceName"] ?? "");
                     item.headerType = Utils.UrlDecode(query["mode"] ?? Global.GrpcGunMode);
                     break;

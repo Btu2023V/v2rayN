@@ -1195,4 +1195,25 @@
   <data name="TransportRequestHostTip5" xml:space="preserve">
     <value>*grpc Authority</value>
   </data>
+  <data name="menuAddHttpServer" xml:space="preserve">
+    <value>添加[Http]服务器</value>
+  </data>
+  <data name="TbSettingsEnableFragment" xml:space="preserve">
+    <value>启用分片（Fragment）</value>
+  </data>
+  <data name="TbSettingsEnableFragmentTips" xml:space="preserve">
+    <value>使用Xray且非Tun模式启用，和分组前置代理冲突</value>
+  </data>
+  <data name="TbSettingsEnableCacheFile4Sbox" xml:space="preserve">
+    <value>启用sing-box（规则集文件）的缓存文件</value>
+  </data>
+  <data name="LvCustomRulesetPath4Singbox" xml:space="preserve">
+    <value>自定义sing-box rule-set</value>
+  </data>
+  <data name="NeedRebootTips" xml:space="preserve">
+    <value>操作成功。请点击设置菜单重启应用。</value>
+  </data>
+  <data name="menuOpenTheFileLocation" xml:space="preserve">
+    <value>打开存储所在的位置</value>
+  </data>
 </root>

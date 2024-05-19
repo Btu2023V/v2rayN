@@ -20,6 +20,7 @@ namespace v2rayN.ViewModels
         [Reactive] public int localPort { get; set; }
         [Reactive] public bool udpEnabled { get; set; }
         [Reactive] public bool sniffingEnabled { get; set; }
+        public IList<string> destOverride { get; set; }
         [Reactive] public bool routeOnly { get; set; }
         [Reactive] public bool allowLANConn { get; set; }
         [Reactive] public bool newPort4LAN { get; set; }
@@ -32,8 +33,10 @@ namespace v2rayN.ViewModels
         [Reactive] public string defFingerprint { get; set; }
         [Reactive] public string defUserAgent { get; set; }
         [Reactive] public string mux4SboxProtocol { get; set; }
+        [Reactive] public bool enableCacheFile4Sbox { get; set; }
         [Reactive] public int hyUpMbps { get; set; }
         [Reactive] public int hyDownMbps { get; set; }
+        [Reactive] public bool enableFragment { get; set; }
 
         #endregion Core
 
@@ -62,9 +65,9 @@ namespace v2rayN.ViewModels
         [Reactive] public bool EnableCheckPreReleaseUpdate { get; set; }
         [Reactive] public bool EnableDragDropSort { get; set; }
         [Reactive] public bool DoubleClick2Activate { get; set; }
-        [Reactive] public int autoUpdateInterval { get; set; }
-        [Reactive] public int trayMenuServersLimit { get; set; }
-        [Reactive] public string currentFontFamily { get; set; }
+        [Reactive] public int AutoUpdateInterval { get; set; }
+        [Reactive] public int TrayMenuServersLimit { get; set; }
+        [Reactive] public string CurrentFontFamily { get; set; }
         [Reactive] public int SpeedTestTimeout { get; set; }
         [Reactive] public string SpeedTestUrl { get; set; }
         [Reactive] public string SpeedPingTestUrl { get; set; }
@@ -127,8 +130,10 @@ namespace v2rayN.ViewModels
             defFingerprint = _config.coreBasicItem.defFingerprint;
             defUserAgent = _config.coreBasicItem.defUserAgent;
             mux4SboxProtocol = _config.mux4SboxItem.protocol;
+            enableCacheFile4Sbox = _config.coreBasicItem.enableCacheFile4Sbox;
             hyUpMbps = _config.hysteriaItem.up_mbps;
             hyDownMbps = _config.hysteriaItem.down_mbps;
+            enableFragment = _config.coreBasicItem.enableFragment;
 
             #endregion Core
 
@@ -157,9 +162,9 @@ namespace v2rayN.ViewModels
             EnableCheckPreReleaseUpdate = _config.guiItem.checkPreReleaseUpdate;
             EnableDragDropSort = _config.uiItem.enableDragDropSort;
             DoubleClick2Activate = _config.uiItem.doubleClick2Activate;
-            autoUpdateInterval = _config.guiItem.autoUpdateInterval;
-            trayMenuServersLimit = _config.guiItem.trayMenuServersLimit;
-            currentFontFamily = _config.uiItem.currentFontFamily;
+            AutoUpdateInterval = _config.guiItem.autoUpdateInterval;
+            TrayMenuServersLimit = _config.guiItem.trayMenuServersLimit;
+            CurrentFontFamily = _config.uiItem.currentFontFamily;
             SpeedTestTimeout = _config.speedTestItem.speedTestTimeout;
             SpeedTestUrl = _config.speedTestItem.speedTestUrl;
             SpeedPingTestUrl = _config.speedTestItem.speedPingTestUrl;
@@ -192,7 +197,7 @@ namespace v2rayN.ViewModels
                 SaveSetting();
             });
 
-            Utils.SetDarkBorder(view, _config.uiItem.colorModeDark);
+            Utils.SetDarkBorder(view, _config.uiItem.followSystemTheme ? !Utils.IsLightTheme() : _config.uiItem.colorModeDark);
         }
 
         private void InitCoreType()
@@ -255,6 +260,10 @@ namespace v2rayN.ViewModels
                 _noticeHandler?.Enqueue(ResUI.FillLocalListeningPort);
                 return;
             }
+            var needReboot = (EnableStatistics != _config.guiItem.enableStatistics
+                            || EnableDragDropSort != _config.uiItem.enableDragDropSort
+                            || EnableHWA != _config.guiItem.enableHWA
+                            || CurrentFontFamily != _config.uiItem.currentFontFamily);  
 
             //if (Utile.IsNullOrEmpty(Kcpmtu.ToString()) || !Utile.IsNumeric(Kcpmtu.ToString())
             //       || Utile.IsNullOrEmpty(Kcptti.ToString()) || !Utile.IsNumeric(Kcptti.ToString())
@@ -271,6 +280,7 @@ namespace v2rayN.ViewModels
             _config.inbound[0].localPort = localPort;
             _config.inbound[0].udpEnabled = udpEnabled;
             _config.inbound[0].sniffingEnabled = sniffingEnabled;
+            _config.inbound[0].destOverride = destOverride?.ToList();
             _config.inbound[0].routeOnly = routeOnly;
             _config.inbound[0].allowLANConn = allowLANConn;
             _config.inbound[0].newPort4LAN = newPort4LAN;
@@ -287,8 +297,10 @@ namespace v2rayN.ViewModels
             _config.coreBasicItem.defFingerprint = defFingerprint;
             _config.coreBasicItem.defUserAgent = defUserAgent;
             _config.mux4SboxItem.protocol = mux4SboxProtocol;
+            _config.coreBasicItem.enableCacheFile4Sbox = enableCacheFile4Sbox;
             _config.hysteriaItem.up_mbps = hyUpMbps;
             _config.hysteriaItem.down_mbps = hyDownMbps;
+            _config.coreBasicItem.enableFragment = enableFragment;
 
             //Kcp
             //_config.kcpItem.mtu = Kcpmtu;
@@ -309,12 +321,12 @@ namespace v2rayN.ViewModels
             _config.uiItem.enableUpdateSubOnlyRemarksExist = EnableUpdateSubOnlyRemarksExist;
             _config.guiItem.enableSecurityProtocolTls13 = EnableSecurityProtocolTls13;
             _config.uiItem.autoHideStartup = AutoHideStartup;
-            _config.guiItem.autoUpdateInterval = autoUpdateInterval;
+            _config.guiItem.autoUpdateInterval = AutoUpdateInterval;
             _config.guiItem.checkPreReleaseUpdate = EnableCheckPreReleaseUpdate;
             _config.uiItem.enableDragDropSort = EnableDragDropSort;
             _config.uiItem.doubleClick2Activate = DoubleClick2Activate;
-            _config.guiItem.trayMenuServersLimit = trayMenuServersLimit;
-            _config.uiItem.currentFontFamily = currentFontFamily;
+            _config.guiItem.trayMenuServersLimit = TrayMenuServersLimit;
+            _config.uiItem.currentFontFamily = CurrentFontFamily;
             _config.speedTestItem.speedTestTimeout = SpeedTestTimeout;
             _config.speedTestItem.speedTestUrl = SpeedTestUrl;
             _config.speedTestItem.speedPingTestUrl = SpeedPingTestUrl;
@@ -337,7 +349,14 @@ namespace v2rayN.ViewModels
 
             if (ConfigHandler.SaveConfig(_config) == 0)
             {
-                _noticeHandler?.Enqueue(ResUI.OperationSuccess);
+                if (needReboot)
+                {
+                    _noticeHandler?.Enqueue(ResUI.NeedRebootTips);
+                }
+                else
+                {
+                    _noticeHandler?.Enqueue(ResUI.OperationSuccess);
+                }
                 _view.DialogResult = true;
             }
             else

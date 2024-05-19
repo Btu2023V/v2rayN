@@ -44,7 +44,7 @@ namespace v2rayN.ViewModels
                 SaveServer();
             });
 
-            Utils.SetDarkBorder(view, _config.uiItem.colorModeDark);
+            Utils.SetDarkBorder(view, _config.uiItem.followSystemTheme ? !Utils.IsLightTheme() : _config.uiItem.colorModeDark);
         }
 
         private void SaveServer()
@@ -80,7 +80,8 @@ namespace v2rayN.ViewModels
                     return;
                 }
             }
-            if (SelectedSource.configType != EConfigType.Socks)
+            if (SelectedSource.configType != EConfigType.Socks
+                && SelectedSource.configType != EConfigType.Http)
             {
                 if (Utils.IsNullOrEmpty(SelectedSource.id))
                 {
@@ -127,6 +128,7 @@ namespace v2rayN.ViewModels
                 EConfigType.VMess => ConfigHandler.AddServer(_config, item),
                 EConfigType.Shadowsocks => ConfigHandler.AddShadowsocksServer(_config, item),
                 EConfigType.Socks => ConfigHandler.AddSocksServer(_config, item),
+                EConfigType.Http => ConfigHandler.AddHttpServer(_config, item),
                 EConfigType.Trojan => ConfigHandler.AddTrojanServer(_config, item),
                 EConfigType.VLESS => ConfigHandler.AddVlessServer(_config, item),
                 EConfigType.Hysteria2 => ConfigHandler.AddHysteria2Server(_config, item),

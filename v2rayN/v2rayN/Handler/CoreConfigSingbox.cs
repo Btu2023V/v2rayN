@@ -54,7 +54,9 @@ namespace v2rayN.Handler
 
                 GenDns(node, singboxConfig);
 
-                GenStatistic(singboxConfig);
+                GenExperimental(singboxConfig);
+
+                ConvertGeo2Ruleset(singboxConfig);
 
                 msg = string.Format(ResUI.SuccessfulConfiguration, "");
             }
@@ -109,7 +111,8 @@ namespace v2rayN.Handler
         {
             try
             {
-                singboxConfig.inbounds.Clear();
+                var listen = "::";
+                singboxConfig.inbounds = [];
 
                 if (!_config.tunModeItem.enableTun || (_config.tunModeItem.enableTun && _config.tunModeItem.enableExInbound))
                 {
@@ -144,11 +147,11 @@ namespace v2rayN.Handler
                         if (_config.inbound[0].newPort4LAN)
                         {
                             var inbound3 = GetInbound(inbound, EInboundProtocol.socks2, true);
-                            inbound3.listen = "::";
+                            inbound3.listen = listen;
                             singboxConfig.inbounds.Add(inbound3);
 
                             var inbound4 = GetInbound(inbound, EInboundProtocol.http2, false);
-                            inbound4.listen = "::";
+                            inbound4.listen = listen;
                             singboxConfig.inbounds.Add(inbound4);
 
                             //auth
@@ -160,8 +163,8 @@ namespace v2rayN.Handler
                         }
                         else
                         {
-                            inbound.listen = "::";
-                            inbound2.listen = "::";
+                            inbound.listen = listen;
+                            inbound2.listen = listen;
                         }
                     }
                 }
@@ -213,105 +216,111 @@ namespace v2rayN.Handler
             {
                 outbound.server = node.address;
                 outbound.server_port = node.port;
+                outbound.type = Global.ProtocolTypes[node.configType];
 
-                if (node.configType == EConfigType.VMess)
+                switch (node.configType)
                 {
-                    outbound.type = Global.ProtocolTypes[EConfigType.VMess];
-
-                    outbound.uuid = node.id;
-                    outbound.alter_id = node.alterId;
-                    if (Global.VmessSecurities.Contains(node.security))
-                    {
-                        outbound.security = node.security;
-                    }
-                    else
-                    {
-                        outbound.security = Global.DefaultSecurity;
-                    }
-
-                    GenOutboundMux(node, outbound);
-                }
-                else if (node.configType == EConfigType.Shadowsocks)
-                {
-                    outbound.type = Global.ProtocolTypes[EConfigType.Shadowsocks];
-
-                    outbound.method = LazyConfig.Instance.GetShadowsocksSecurities(node).Contains(node.security) ? node.security : Global.None;
-                    outbound.password = node.id;
-
-                    GenOutboundMux(node, outbound);
-                }
-                else if (node.configType == EConfigType.Socks)
-                {
-                    outbound.type = Global.ProtocolTypes[EConfigType.Socks];
-
-                    outbound.version = "5";
-                    if (!Utils.IsNullOrEmpty(node.security)
-                      && !Utils.IsNullOrEmpty(node.id))
-                    {
-                        outbound.username = node.security;
-                        outbound.password = node.id;
-                    }
-                }
-                else if (node.configType == EConfigType.VLESS)
-                {
-                    outbound.type = Global.ProtocolTypes[EConfigType.VLESS];
-
-                    outbound.uuid = node.id;
-
-                    outbound.packet_encoding = "xudp";
-
-                    if (Utils.IsNullOrEmpty(node.flow))
-                    {
-                        GenOutboundMux(node, outbound);
-                    }
-                    else
-                    {
-                        outbound.flow = node.flow;
-                    }
-                }
-                else if (node.configType == EConfigType.Trojan)
-                {
-                    outbound.type = Global.ProtocolTypes[EConfigType.Trojan];
-
-                    outbound.password = node.id;
-
-                    GenOutboundMux(node, outbound);
-                }
-                else if (node.configType == EConfigType.Hysteria2)
-                {
-                    outbound.type = Global.ProtocolTypes[EConfigType.Hysteria2];
-
-                    outbound.password = node.id;
-
-                    if (!Utils.IsNullOrEmpty(node.path))
-                    {
-                        outbound.obfs = new()
+                    case EConfigType.VMess:
                         {
-                            type = "salamander",
-                            password = node.path.TrimEx(),
-                        };
-                    }
+                            outbound.uuid = node.id;
+                            outbound.alter_id = node.alterId;
+                            if (Global.VmessSecurities.Contains(node.security))
+                            {
+                                outbound.security = node.security;
+                            }
+                            else
+                            {
+                                outbound.security = Global.DefaultSecurity;
+                            }
 
-                    outbound.up_mbps = _config.hysteriaItem.up_mbps > 0 ? _config.hysteriaItem.up_mbps : null;
-                    outbound.down_mbps = _config.hysteriaItem.down_mbps > 0 ? _config.hysteriaItem.down_mbps : null;
-                }
-                else if (node.configType == EConfigType.Tuic)
-                {
-                    outbound.type = Global.ProtocolTypes[EConfigType.Tuic];
+                            GenOutboundMux(node, outbound);
+                            break;
+                        }
+                    case EConfigType.Shadowsocks:
+                        {
+                            outbound.method = LazyConfig.Instance.GetShadowsocksSecurities(node).Contains(node.security) ? node.security : Global.None;
+                            outbound.password = node.id;
 
-                    outbound.uuid = node.id;
-                    outbound.password = node.security;
-                    outbound.congestion_control = node.headerType;
-                }
-                else if (node.configType == EConfigType.Wireguard)
-                {
-                    outbound.type = Global.ProtocolTypes[EConfigType.Wireguard];
+                            GenOutboundMux(node, outbound);
+                            break;
+                        }
+                    case EConfigType.Socks:
+                        {
+                            outbound.version = "5";
+                            if (!Utils.IsNullOrEmpty(node.security)
+                              && !Utils.IsNullOrEmpty(node.id))
+                            {
+                                outbound.username = node.security;
+                                outbound.password = node.id;
+                            }
+                            break;
+                        }
+                    case EConfigType.Http:
+                        {
+                            if (!Utils.IsNullOrEmpty(node.security)
+                              && !Utils.IsNullOrEmpty(node.id))
+                            {
+                                outbound.username = node.security;
+                                outbound.password = node.id;
+                            }
+                            break;
+                        }
+                    case EConfigType.VLESS:
+                        {
+                            outbound.uuid = node.id;
 
-                    outbound.private_key = node.id;
-                    outbound.peer_public_key = node.publicKey;
-                    outbound.reserved = Utils.String2List(node.path).Select(int.Parse).ToArray();
-                    outbound.local_address = [.. Utils.String2List(node.requestHost)];
-                    outbound.mtu = Utils.ToInt(node.shortId.IsNullOrEmpty() ? Global.TunMtus.FirstOrDefault() : node.shortId);
+                            outbound.packet_encoding = "xudp";
+
+                            if (Utils.IsNullOrEmpty(node.flow))
+                            {
+                                GenOutboundMux(node, outbound);
+                            }
+                            else
+                            {
+                                outbound.flow = node.flow;
+                            }
+                            break;
+                        }
+                    case EConfigType.Trojan:
+                        {
+                            outbound.password = node.id;
+
+                            GenOutboundMux(node, outbound);
+                            break;
+                        }
+                    case EConfigType.Hysteria2:
+                        {
+                            outbound.password = node.id;
+
+                            if (!Utils.IsNullOrEmpty(node.path))
+                            {
+                                outbound.obfs = new()
+                                {
+                                    type = "salamander",
+                                    password = node.path.TrimEx(),
+                                };
+                            }
+
+                            outbound.up_mbps = _config.hysteriaItem.up_mbps > 0 ? _config.hysteriaItem.up_mbps : null;
+                            outbound.down_mbps = _config.hysteriaItem.down_mbps > 0 ? _config.hysteriaItem.down_mbps : null;
+                            break;
+                        }
+                    case EConfigType.Tuic:
+                        {
+                            outbound.uuid = node.id;
+                            outbound.password = node.security;
+                            outbound.congestion_control = node.headerType;
+                            break;
+                        }
+                    case EConfigType.Wireguard:
+                        {
+                            outbound.private_key = node.id;
+                            outbound.peer_public_key = node.publicKey;
+                            outbound.reserved = Utils.String2List(node.path).Select(int.Parse).ToArray();
+                            outbound.local_address = [.. Utils.String2List(node.requestHost)];
+                            outbound.mtu = Utils.ToInt(node.shortId.IsNullOrEmpty() ? Global.TunMtus.FirstOrDefault() : node.shortId);
+                            break;
+                        }
                 }
 
                 GenOutboundTls(node, outbound);
@@ -329,16 +338,16 @@ namespace v2rayN.Handler
         {
             try
             {
-                //if (_config.coreBasicItem.muxEnabled)
-                //{
-                //    var mux = new Multiplex4Sbox()
-                //    {
-                //        enabled = true,
-                //        protocol = _config.mux4SboxItem.protocol,
-                //        max_connections = _config.mux4SboxItem.max_connections,
-                //    };
-                //    outbound.multiplex = mux;
-                //}
+                if (_config.coreBasicItem.muxEnabled && !Utils.IsNullOrEmpty(_config.mux4SboxItem.protocol))
+                {
+                    var mux = new Multiplex4Sbox()
+                    {
+                        enabled = true,
+                        protocol = _config.mux4SboxItem.protocol,
+                        max_connections = _config.mux4SboxItem.max_connections,
+                    };
+                    outbound.multiplex = mux;
+                }
             }
             catch (Exception ex)
             {
@@ -531,24 +540,38 @@ namespace v2rayN.Handler
         {
             try
             {
+                var dnsOutbound = "dns_out";
+                if (!_config.inbound[0].sniffingEnabled)
+                {
+                    singboxConfig.route.rules.Add(new()
+                    {
+                        port = [53],
+                        network = "udp",
+                        outbound = dnsOutbound
+                    });
+                }
+
                 if (_config.tunModeItem.enableTun)
                 {
                     singboxConfig.route.auto_detect_interface = true;
 
                     var tunRules = JsonUtils.Deserialize<List<Rule4Sbox>>(Utils.GetEmbedText(Global.TunSingboxRulesFileName));
-                    singboxConfig.route.rules.AddRange(tunRules);
+                    if (tunRules != null)
+                    {
+                        singboxConfig.route.rules.AddRange(tunRules);
+                    }
 
                     GenRoutingDirectExe(out List<string> lstDnsExe, out List<string> lstDirectExe);
                     singboxConfig.route.rules.Add(new()
                     {
                         port = new() { 53 },
-                        outbound = "dns_out",
+                        outbound = dnsOutbound,
                         process_name = lstDnsExe
                     });
 
                     singboxConfig.route.rules.Add(new()
                     {
-                        outbound = "direct",
+                        outbound = Global.DirectTag,
                         process_name = lstDirectExe
                     });
                 }
@@ -647,6 +670,7 @@ namespace v2rayN.Handler
                 {
                     rule.inbound = item.inboundTag;
                 }
+                var rule1 = JsonUtils.DeepCopy(rule);
                 var rule2 = JsonUtils.DeepCopy(rule);
                 var rule3 = JsonUtils.DeepCopy(rule);
 
@@ -656,11 +680,11 @@ namespace v2rayN.Handler
                     var countDomain = 0;
                     foreach (var it in item.domain)
                     {
-                        if (ParseV2Domain(it, rule)) countDomain++;
+                        if (ParseV2Domain(it, rule1)) countDomain++;
                     }
                     if (countDomain > 0)
                     {
-                        rules.Add(rule);
+                        rules.Add(rule1);
                         hasDomainIp = true;
                     }
                 }
@@ -750,6 +774,10 @@ namespace v2rayN.Handler
             {
                 return false;
             }
+            else if (address.Equals("geoip:private"))
+            {
+                rule.ip_is_private = true;
+            }
             else if (address.StartsWith("geoip:"))
             {
                 if (rule.geoip is null) { rule.geoip = new(); }
@@ -767,50 +795,25 @@ namespace v2rayN.Handler
         {
             try
             {
-                Dns4Sbox? dns4Sbox;
+                var item = LazyConfig.Instance.GetDNSItem(ECoreType.sing_box);
+                var strDNS = string.Empty;
                 if (_config.tunModeItem.enableTun)
                 {
-                    var item = LazyConfig.Instance.GetDNSItem(ECoreType.sing_box);
-                    var tunDNS = item?.tunDNS;
-                    if (Utils.IsNullOrEmpty(tunDNS))
-                    {
-                        tunDNS = Utils.GetEmbedText(Global.TunSingboxDNSFileName);
-                    }
-                    dns4Sbox = JsonUtils.Deserialize<Dns4Sbox>(tunDNS);
+                    strDNS = Utils.IsNullOrEmpty(item?.tunDNS) ? Utils.GetEmbedText(Global.TunSingboxDNSFileName) : item?.tunDNS;
                 }
                 else
                 {
-                    var item = LazyConfig.Instance.GetDNSItem(ECoreType.sing_box);
-                    var normalDNS = item?.normalDNS;
-                    if (Utils.IsNullOrEmpty(normalDNS))
-                    {
-                        normalDNS = "{\"servers\":[{\"address\":\"tcp://8.8.8.8\"}]}";
-                    }
-
-                    dns4Sbox = JsonUtils.Deserialize<Dns4Sbox>(normalDNS);
+                    strDNS = Utils.IsNullOrEmpty(item?.normalDNS) ? Utils.GetEmbedText(Global.DNSSingboxNormalFileName) : item?.normalDNS;
                 }
+
+                var dns4Sbox = JsonUtils.Deserialize<Dns4Sbox>(strDNS);
                 if (dns4Sbox is null)
                 {
                     return 0;
                 }
-                //Add the dns of the remote server domain
-                if (dns4Sbox.rules is null)
-                {
-                    dns4Sbox.rules = new();
-                }
-                dns4Sbox.servers.Add(new()
-                {
-                    tag = "local_local",
-                    address = "223.5.5.5",
-                    detour = "direct"
-                });
-                dns4Sbox.rules.Add(new()
-                {
-                    server = "local_local",
-                    outbound = "any"
-                });
-
                 singboxConfig.dns = dns4Sbox;
+
+                GenDnsDomains(singboxConfig);
             }
             catch (Exception ex)
             {
@@ -819,30 +822,135 @@ namespace v2rayN.Handler
             return 0;
         }
 
-        private int GenStatistic(SingboxConfig singboxConfig)
+        private int GenDnsDomains(SingboxConfig singboxConfig)
+        {
+            var dns4Sbox = singboxConfig.dns ?? new();
+            dns4Sbox.servers ??= [];
+            dns4Sbox.rules ??= [];
+
+            var lstDomain = singboxConfig.outbounds
+                           .Where(t => !Utils.IsNullOrEmpty(t.server) && Utils.IsDomain(t.server))
+                           .Select(t => t.server)
+                           .ToList();
+            if (lstDomain != null && lstDomain.Count > 0)
+            {
+                var tag = "local_local";
+                dns4Sbox.servers.Insert(0, new()
+                {
+                    tag = tag,
+                    address = "223.5.5.5",
+                    detour = Global.DirectTag,
+                });
+                dns4Sbox.rules.Insert(0, new()
+                {
+                    server = tag,
+                    domain = lstDomain
+                });
+            }
+            singboxConfig.dns = dns4Sbox;
+            return 0;
+        }
+
+        private int GenExperimental(SingboxConfig singboxConfig)
         {
             if (_config.guiItem.enableStatistics)
             {
-                singboxConfig.experimental = new Experimental4Sbox()
+                singboxConfig.experimental ??= new Experimental4Sbox();
+                singboxConfig.experimental.clash_api = new Clash_Api4Sbox()
                 {
-                    //cache_file = new CacheFile4Sbox()
-                    //{
-                    //    enabled = true
-                    //},
-                    //v2ray_api = new V2ray_Api4Sbox()
-                    //{
-                    //    listen = $"{Global.Loopback}:{Global.StatePort}",
-                    //    stats = new Stats4Sbox()
-                    //    {
-                    //        enabled = true,
-                    //    }
-                    //},
-                    clash_api = new Clash_Api4Sbox()
-                    {
-                        external_controller = $"{Global.Loopback}:{LazyConfig.Instance.StatePort}",
-                    }
+                    external_controller = $"{Global.Loopback}:{LazyConfig.Instance.StatePort}",
                 };
             }
+
+            if (_config.coreBasicItem.enableCacheFile4Sbox)
+            {
+                singboxConfig.experimental ??= new Experimental4Sbox();
+                singboxConfig.experimental.cache_file = new CacheFile4Sbox()
+                {
+                    enabled = true
+                };
+            }
+
+            return 0;
+        }
+
+        private int ConvertGeo2Ruleset(SingboxConfig singboxConfig)
+        {
+            var geosite = "geosite";
+            var geoip = "geoip";
+            var ruleSets = new List<string>();
+
+            //convert route geosite & geoip to ruleset
+            foreach (var rule in singboxConfig.route.rules.Where(t => t.geosite?.Count > 0).ToList() ?? [])
+            {
+                rule.rule_set = rule?.geosite?.Select(t => $"{geosite}-{t}").ToList();
+                rule.geosite = null;
+                ruleSets.AddRange(rule.rule_set);
+            }
+            foreach (var rule in singboxConfig.route.rules.Where(t => t.geoip?.Count > 0).ToList() ?? [])
+            {
+                rule.rule_set = rule?.geoip?.Select(t => $"{geoip}-{t}").ToList();
+                rule.geoip = null;
+                ruleSets.AddRange(rule.rule_set);
+            }
+
+            //convert dns geosite & geoip to ruleset
+            foreach (var rule in singboxConfig.dns?.rules.Where(t => t.geosite?.Count > 0).ToList() ?? [])
+            {
+                rule.rule_set = rule?.geosite?.Select(t => $"{geosite}-{t}").ToList();
+                rule.geosite = null;
+            }
+            foreach (var rule in singboxConfig.dns?.rules.Where(t => t.geoip?.Count > 0).ToList() ?? [])
+            {
+                rule.rule_set = rule?.geoip?.Select(t => $"{geoip}-{t}").ToList();
+                rule.geoip = null;
+            }
+            foreach (var dnsRule in singboxConfig.dns?.rules.Where(t => t.rule_set?.Count > 0).ToList() ?? [])
+            {
+                ruleSets.AddRange(dnsRule.rule_set);
+            }
+
+            //load custom ruleset file
+            List<Ruleset4Sbox> customRulesets = [];
+            if (_config.routingBasicItem.enableRoutingAdvanced)
+            {
+                var routing = ConfigHandler.GetDefaultRouting(_config);
+                if (!Utils.IsNullOrEmpty(routing.customRulesetPath4Singbox))
+                {
+                    var result = Utils.LoadResource(routing.customRulesetPath4Singbox);
+                    if (!Utils.IsNullOrEmpty(result))
+                    {
+                        customRulesets = (JsonUtils.Deserialize<List<Ruleset4Sbox>>(result) ?? [])
+                            .Where(t => t.tag != null)
+                            .Where(t => t.type != null)
+                            .Where(t => t.format != null)
+                            .ToList();
+                    }
+                }
+            }
+
+            //Add ruleset srs
+            singboxConfig.route.rule_set = [];
+            foreach (var item in new HashSet<string>(ruleSets))
+            {
+                var customRuleset = customRulesets.FirstOrDefault(t => t.tag != null && t.tag.Equals(item));
+                if (customRuleset != null)
+                {
+                    singboxConfig.route.rule_set.Add(customRuleset);
+                }
+                else
+                {
+                    singboxConfig.route.rule_set.Add(new()
+                    {
+                        type = "remote",
+                        format = "binary",
+                        tag = item,
+                        url = string.Format(Global.SingboxRulesetUrl, item.StartsWith(geosite) ? geosite : geoip, item),
+                        download_detour = Global.ProxyTag
+                    });
+                }
+            }
+
             return 0;
         }
 
@@ -983,12 +1091,18 @@ namespace v2rayN.Handler
                     singboxConfig.route.rules.Add(rule);
                 }
 
-                GenDns(new(), singboxConfig);
-                var dnsServer = singboxConfig.dns?.servers.FirstOrDefault();
-                if (dnsServer != null)
-                {
-                    dnsServer.detour = singboxConfig.route.rules.LastOrDefault()?.outbound;
-                }
+                GenDnsDomains(singboxConfig);
+                //var dnsServer = singboxConfig.dns?.servers.FirstOrDefault();
+                //if (dnsServer != null)
+                //{
+                //    dnsServer.detour = singboxConfig.route.rules.LastOrDefault()?.outbound;
+                //}
+                //var dnsRule = singboxConfig.dns?.rules.Where(t => t.outbound != null).FirstOrDefault();
+                //if (dnsRule != null)
+                //{
+                //    singboxConfig.dns.rules = [];
+                //    singboxConfig.dns.rules.Add(dnsRule);
+                //}
 
                 //msg = string.Format(ResUI.SuccessfulConfiguration"), node.getSummary());
                 return 0;

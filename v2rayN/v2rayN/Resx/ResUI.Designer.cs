@@ -412,6 +412,15 @@ namespace v2rayN.Resx {
         }
         
         /// <summary>
+        ///   查找类似 Custom the rule-set of sing-box 的本地化字符串。
+        /// </summary>
+        public static string LvCustomRulesetPath4Singbox {
+            get {
+                return ResourceManager.GetString("LvCustomRulesetPath4Singbox", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   查找类似 Enabled Update 的本地化字符串。
         /// </summary>
         public static string LvEnabled {
@@ -615,6 +624,15 @@ namespace v2rayN.Resx {
         public static string menuAddCustomServer {
             get {
                 return ResourceManager.GetString("menuAddCustomServer", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 Add [Http] server 的本地化字符串。
+        /// </summary>
+        public static string menuAddHttpServer {
+            get {
+                return ResourceManager.GetString("menuAddHttpServer", resourceCulture);
             }
         }
         
@@ -957,6 +975,15 @@ namespace v2rayN.Resx {
         public static string menuMsgViewSelectAll {
             get {
                 return ResourceManager.GetString("menuMsgViewSelectAll", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 Open the storage location 的本地化字符串。
+        /// </summary>
+        public static string menuOpenTheFileLocation {
+            get {
+                return ResourceManager.GetString("menuOpenTheFileLocation", resourceCulture);
             }
         }
         
@@ -1560,6 +1587,15 @@ namespace v2rayN.Resx {
         public static string MsgUpdateV2rayCoreSuccessfullyMore {
             get {
                 return ResourceManager.GetString("MsgUpdateV2rayCoreSuccessfullyMore", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 Successful operation. Click the settings menu to reboot the app. 的本地化字符串。
+        /// </summary>
+        public static string NeedRebootTips {
+            get {
+                return ResourceManager.GetString("NeedRebootTips", resourceCulture);
             }
         }
         
@@ -2600,6 +2636,15 @@ namespace v2rayN.Resx {
         }
         
         /// <summary>
+        ///   查找类似 Enable cache file for sing-box (ruleset files) 的本地化字符串。
+        /// </summary>
+        public static string TbSettingsEnableCacheFile4Sbox {
+            get {
+                return ResourceManager.GetString("TbSettingsEnableCacheFile4Sbox", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   查找类似 Check for pre-release updates 的本地化字符串。
         /// </summary>
         public static string TbSettingsEnableCheckPreReleaseUpdate {
@@ -2623,6 +2668,24 @@ namespace v2rayN.Resx {
         public static string TbSettingsEnableExInbound {
             get {
                 return ResourceManager.GetString("TbSettingsEnableExInbound", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 Enable fragment 的本地化字符串。
+        /// </summary>
+        public static string TbSettingsEnableFragment {
+            get {
+                return ResourceManager.GetString("TbSettingsEnableFragment", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 Use Xray and enable non-Tun mode, which conflicts with the group previous proxy 的本地化字符串。
+        /// </summary>
+        public static string TbSettingsEnableFragmentTips {
+            get {
+                return ResourceManager.GetString("TbSettingsEnableFragmentTips", resourceCulture);
             }
         }
         

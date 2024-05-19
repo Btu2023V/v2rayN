@@ -31,6 +31,10 @@ namespace v2rayN.Models
         /// 默认用户代理
         /// </summary>
         public string defUserAgent { get; set; }
+
+        public bool enableFragment { get; set; }
+
+        public bool enableCacheFile4Sbox { get; set; } = true;
     }
 
     [Serializable]
@@ -43,8 +47,8 @@ namespace v2rayN.Models
         public bool udpEnabled { get; set; }
 
         public bool sniffingEnabled { get; set; } = true;
+        public List<string>? destOverride { get; set; } = ["http", "tls"];
         public bool routeOnly { get; set; }
-
         public bool allowLANConn { get; set; }
 
         public bool newPort4LAN { get; set; }
@@ -178,16 +182,11 @@ namespace v2rayN.Models
     [Serializable]
     public class RoutingBasicItem
     {
-        /// <summary>
-        /// 域名解析策略
-        /// </summary>
         public string domainStrategy { get; set; }
-
         public string domainStrategy4Singbox { get; set; }
-
         public string domainMatcher { get; set; }
         public string routingIndexId { get; set; }
-        public bool enableRoutingAdvanced { get; set; }
+        public bool enableRoutingAdvanced { get; set; }        
     }
 
     [Serializable]

@@ -67,6 +67,8 @@
                             <RowDefinition Height="Auto" />
                             <RowDefinition Height="Auto" />
                             <RowDefinition Height="Auto" />
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="Auto" />
                         </Grid.RowDefinitions>
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="Auto" />
@@ -117,12 +119,22 @@
                             VerticalAlignment="Center"
                             Style="{StaticResource ToolbarTextBlock}"
                             Text="{x:Static resx:ResUI.TbSettingsSniffingEnabled}" />
-                        <ToggleButton
-                            x:Name="togsniffingEnabled"
+                        <StackPanel
                             Grid.Row="2"
                             Grid.Column="1"
-                            Margin="{StaticResource SettingItemMargin}"
-                            HorizontalAlignment="Left" />
+                            Grid.ColumnSpan="2"
+                            Orientation="Horizontal">
+                            <ToggleButton
+                                x:Name="togsniffingEnabled"
+                                Margin="{StaticResource SettingItemMargin}"
+                                HorizontalAlignment="Left" />
+                            <ListBox
+                                x:Name="clbdestOverride"
+                                Margin="4"
+                                HorizontalAlignment="Left"
+                                FontSize="{DynamicResource StdFontSize}"
+                                Style="{StaticResource MaterialDesignFilterChipPrimaryListBox}" />
+                        </StackPanel>
 
                         <TextBlock
                             Grid.Row="3"
@@ -313,10 +325,24 @@
                             Margin="{StaticResource SettingItemMargin}"
                             VerticalAlignment="Center"
                             Style="{StaticResource ToolbarTextBlock}"
+                            Text="{x:Static resx:ResUI.TbSettingsEnableCacheFile4Sbox}" />
+                        <ToggleButton
+                            x:Name="togenableCacheFile4Sbox"
+                            Grid.Row="15"
+                            Grid.Column="1"
+                            Margin="{StaticResource SettingItemMargin}"
+                            HorizontalAlignment="Left" />
+
+                        <TextBlock
+                            Grid.Row="16"
+                            Grid.Column="0"
+                            Margin="{StaticResource SettingItemMargin}"
+                            VerticalAlignment="Center"
+                            Style="{StaticResource ToolbarTextBlock}"
                             Text="{x:Static resx:ResUI.TbSettingsHysteriaBandwidth}" />
 
                         <StackPanel
-                            Grid.Row="15"
+                            Grid.Row="16"
                             Grid.Column="1"
                             Orientation="Horizontal">
 
@@ -333,6 +359,26 @@
                                 materialDesign:HintAssist.Hint="Down"
                                 Style="{StaticResource DefTextBox}" />
                         </StackPanel>
+
+                        <TextBlock
+                            Grid.Row="17"
+                            Grid.Column="0"
+                            Margin="{StaticResource SettingItemMargin}"
+                            VerticalAlignment="Center"
+                            Style="{StaticResource ToolbarTextBlock}"
+                            Text="{x:Static resx:ResUI.TbSettingsEnableFragment}" />
+                        <ToggleButton
+                            x:Name="togenableFragment"
+                            Grid.Row="17"
+                            Grid.Column="1"
+                            Margin="{StaticResource SettingItemMargin}"
+                            HorizontalAlignment="Left" />
+                        <TextBlock
+                            Grid.Row="17"
+                            Grid.Column="3"
+                            Margin="{StaticResource SettingItemMargin}"
+                            Style="{StaticResource ToolbarTextBlock}"
+                            Text="{x:Static resx:ResUI.TbSettingsEnableFragmentTips}" />
                     </Grid>
                 </ScrollViewer>
             </TabItem>

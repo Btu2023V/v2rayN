@@ -7,7 +7,7 @@
         public List<Inbound4Sbox> inbounds { get; set; }
         public List<Outbound4Sbox> outbounds { get; set; }
         public Route4Sbox route { get; set; }
-        public Experimental4Sbox experimental { get; set; }
+        public Experimental4Sbox? experimental { get; set; }
     }
 
     public class Log4Sbox
@@ -35,19 +35,21 @@
     {
         public bool? auto_detect_interface { get; set; }
         public List<Rule4Sbox> rules { get; set; }
+        public List<Ruleset4Sbox>? rule_set { get; set; }
     }
 
     [Serializable]
     public class Rule4Sbox
     {
-        public string outbound { get; set; }
-        public string server { get; set; }
+        public string? outbound { get; set; }
+        public string? server { get; set; }
         public bool? disable_cache { get; set; }
         public List<string>? inbound { get; set; }
         public List<string>? protocol { get; set; }
-        public string type { get; set; }
-        public string mode { get; set; }
-        public string network { get; set; }
+        public string? type { get; set; }
+        public string? mode { get; set; }
+        public string? network { get; set; }
+        public bool? ip_is_private { get; set; }
         public List<int>? port { get; set; }
         public List<string>? port_range { get; set; }
         public List<string>? geosite { get; set; }
@@ -58,8 +60,8 @@
         public List<string>? geoip { get; set; }
         public List<string>? ip_cidr { get; set; }
         public List<string>? source_ip_cidr { get; set; }
-
         public List<string>? process_name { get; set; }
+        public List<string>? rule_set { get; set; }
     }
 
     [Serializable]
@@ -93,7 +95,7 @@
     {
         public string type { get; set; }
         public string tag { get; set; }
-        public string server { get; set; }
+        public string? server { get; set; }
         public int? server_port { get; set; }
         public string uuid { get; set; }
         public string security { get; set; }
@@ -229,5 +231,16 @@
         public string? path { get; set; }
         public string? cache_id { get; set; }
         public bool? store_fakeip { get; set; }
+    }
+
+    public class Ruleset4Sbox
+    {
+        public string? tag { get; set; }
+        public string? type { get; set; }
+        public string? format { get; set; }
+        public string? path { get; set; }
+        public string? url { get; set; }
+        public string? download_detour { get; set; }
+        public string? update_interval { get; set; }  
     }
 }

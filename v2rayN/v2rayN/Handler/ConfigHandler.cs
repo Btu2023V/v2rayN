@@ -50,7 +50,6 @@ namespace v2rayN.Handler
                 {
                     logEnabled = false,
                     loglevel = "warning",
-
                     muxEnabled = false,
                 };
             }
@@ -180,7 +179,7 @@ namespace v2rayN.Handler
                 config.mux4SboxItem = new()
                 {
                     protocol = Global.SingboxMuxs[0],
-                    max_connections = 4
+                    max_connections = 8
                 };
             }
 
@@ -241,103 +240,103 @@ namespace v2rayN.Handler
             }
         }
 
-        public static int ImportOldGuiConfig(Config config, string fileName)
-        {
-            var result = Utils.LoadResource(fileName);
-            if (Utils.IsNullOrEmpty(result))
-            {
-                return -1;
-            }
+        //public static int ImportOldGuiConfig(Config config, string fileName)
+        //{
+        //    var result = Utils.LoadResource(fileName);
+        //    if (Utils.IsNullOrEmpty(result))
+        //    {
+        //        return -1;
+        //    }
 
-            var configOld = JsonUtils.Deserialize<ConfigOld>(result);
-            if (configOld == null)
-            {
-                return -1;
-            }
+        //    var configOld = JsonUtils.Deserialize<ConfigOld>(result);
+        //    if (configOld == null)
+        //    {
+        //        return -1;
+        //    }
 
-            var subItem = JsonUtils.Deserialize<List<SubItem>>(JsonUtils.Serialize(configOld.subItem));
-            foreach (var it in subItem)
-            {
-                if (Utils.IsNullOrEmpty(it.id))
-                {
-                    it.id = Utils.GetGUID(false);
-                }
-                SQLiteHelper.Instance.Replace(it);
-            }
+        //    var subItem = JsonUtils.Deserialize<List<SubItem>>(JsonUtils.Serialize(configOld.subItem));
+        //    foreach (var it in subItem)
+        //    {
+        //        if (Utils.IsNullOrEmpty(it.id))
+        //        {
+        //            it.id = Utils.GetGUID(false);
+        //        }
+        //        SQLiteHelper.Instance.Replace(it);
+        //    }
 
-            var profileItems = JsonUtils.Deserialize<List<ProfileItem>>(JsonUtils.Serialize(configOld.vmess));
-            foreach (var it in profileItems)
-            {
-                if (Utils.IsNullOrEmpty(it.indexId))
-                {
-                    it.indexId = Utils.GetGUID(false);
-                }
-                SQLiteHelper.Instance.Replace(it);
-            }
+        //    var profileItems = JsonUtils.Deserialize<List<ProfileItem>>(JsonUtils.Serialize(configOld.vmess));
+        //    foreach (var it in profileItems)
+        //    {
+        //        if (Utils.IsNullOrEmpty(it.indexId))
+        //        {
+        //            it.indexId = Utils.GetGUID(false);
+        //        }
+        //        SQLiteHelper.Instance.Replace(it);
+        //    }
 
-            foreach (var it in configOld.routings)
-            {
-                if (it.locked)
-                {
-                    continue;
-                }
-                var routing = JsonUtils.Deserialize<RoutingItem>(JsonUtils.Serialize(it));
-                foreach (var it2 in it.rules)
-                {
-                    it2.id = Utils.GetGUID(false);
-                }
-                routing.ruleNum = it.rules.Count;
-                routing.ruleSet = JsonUtils.Serialize(it.rules, false);
+        //    foreach (var it in configOld.routings)
+        //    {
+        //        if (it.locked)
+        //        {
+        //            continue;
+        //        }
+        //        var routing = JsonUtils.Deserialize<RoutingItem>(JsonUtils.Serialize(it));
+        //        foreach (var it2 in it.rules)
+        //        {
+        //            it2.id = Utils.GetGUID(false);
+        //        }
+        //        routing.ruleNum = it.rules.Count;
+        //        routing.ruleSet = JsonUtils.Serialize(it.rules, false);
 
-                if (Utils.IsNullOrEmpty(routing.id))
-                {
-                    routing.id = Utils.GetGUID(false);
-                }
-                SQLiteHelper.Instance.Replace(routing);
-            }
+        //        if (Utils.IsNullOrEmpty(routing.id))
+        //        {
+        //            routing.id = Utils.GetGUID(false);
+        //        }
+        //        SQLiteHelper.Instance.Replace(routing);
+        //    }
 
-            config = JsonUtils.Deserialize<Config>(JsonUtils.Serialize(configOld));
+        //    config = JsonUtils.Deserialize<Config>(JsonUtils.Serialize(configOld));
 
-            if (config.coreBasicItem == null)
-            {
-                config.coreBasicItem = new()
-                {
-                    logEnabled = configOld.logEnabled,
-                    loglevel = configOld.loglevel,
-                    muxEnabled = configOld.muxEnabled,
-                };
-            }
+        //    if (config.coreBasicItem == null)
+        //    {
+        //        config.coreBasicItem = new()
+        //        {
+        //            logEnabled = configOld.logEnabled,
+        //            loglevel = configOld.loglevel,
+        //            muxEnabled = configOld.muxEnabled,
+        //        };
+        //    }
 
-            if (config.routingBasicItem == null)
-            {
-                config.routingBasicItem = new()
-                {
-                    enableRoutingAdvanced = configOld.enableRoutingAdvanced,
-                    domainStrategy = configOld.domainStrategy
-                };
-            }
+        //    if (config.routingBasicItem == null)
+        //    {
+        //        config.routingBasicItem = new()
+        //        {
+        //            enableRoutingAdvanced = configOld.enableRoutingAdvanced,
+        //            domainStrategy = configOld.domainStrategy
+        //        };
+        //    }
 
-            if (config.guiItem == null)
-            {
-                config.guiItem = new()
-                {
-                    enableStatistics = configOld.enableStatistics,
-                    keepOlderDedupl = configOld.keepOlderDedupl,
-                    ignoreGeoUpdateCore = configOld.ignoreGeoUpdateCore,
-                    autoUpdateInterval = configOld.autoUpdateInterval,
-                    checkPreReleaseUpdate = configOld.checkPreReleaseUpdate,
-                    enableSecurityProtocolTls13 = configOld.enableSecurityProtocolTls13,
-                    trayMenuServersLimit = configOld.trayMenuServersLimit,
-                };
-            }
+        //    if (config.guiItem == null)
+        //    {
+        //        config.guiItem = new()
+        //        {
+        //            enableStatistics = configOld.enableStatistics,
+        //            keepOlderDedupl = configOld.keepOlderDedupl,
+        //            ignoreGeoUpdateCore = configOld.ignoreGeoUpdateCore,
+        //            autoUpdateInterval = configOld.autoUpdateInterval,
+        //            checkPreReleaseUpdate = configOld.checkPreReleaseUpdate,
+        //            enableSecurityProtocolTls13 = configOld.enableSecurityProtocolTls13,
+        //            trayMenuServersLimit = configOld.trayMenuServersLimit,
+        //        };
+        //    }
 
-            GetDefaultServer(config);
-            GetDefaultRouting(config);
-            SaveConfig(config);
-            LoadConfig(ref config);
+        //    GetDefaultServer(config);
+        //    GetDefaultRouting(config);
+        //    SaveConfig(config);
+        //    LoadConfig(ref config);
 
-            return 0;
-        }
+        //    return 0;
+        //}
 
         #endregion ConfigHandler
 
@@ -656,6 +655,23 @@ namespace v2rayN.Handler
         public static int AddSocksServer(Config config, ProfileItem profileItem, bool toFile = true)
         {
             profileItem.configType = EConfigType.Socks;
+
+            profileItem.address = profileItem.address.TrimEx();
+
+            AddServerCommon(config, profileItem, toFile);
+
+            return 0;
+        }
+
+        /// <summary>
+        /// Add or edit server
+        /// </summary>
+        /// <param name="config"></param>
+        /// <param name="profileItem"></param>
+        /// <returns></returns>
+        public static int AddHttpServer(Config config, ProfileItem profileItem, bool toFile = true)
+        {
+            profileItem.configType = EConfigType.Http;
 
             profileItem.address = profileItem.address.TrimEx();
 
@@ -1657,14 +1673,15 @@ namespace v2rayN.Handler
 
         public static int InitBuiltinRouting(Config config, bool blImportAdvancedRules = false)
         {
+            var ver = "V2-";
             var items = LazyConfig.Instance.RoutingItems();
-            if (blImportAdvancedRules || items.Count <= 0)
+            if (blImportAdvancedRules || items.Where(t => t.remarks.StartsWith(ver)).ToList().Count <= 0)
             {
                 var maxSort = items.Count;
                 //Bypass the mainland
                 var item2 = new RoutingItem()
                 {
-                    remarks = "绕过大陆(Whitelist)",
+                    remarks = $"{ver}绕过大陆(Whitelist)",
                     url = string.Empty,
                     sort = maxSort + 1,
                 };
@@ -1673,7 +1690,7 @@ namespace v2rayN.Handler
                 //Blacklist
                 var item3 = new RoutingItem()
                 {
-                    remarks = "黑名单(Blacklist)",
+                    remarks = $"{ver}黑名单(Blacklist)",
                     url = string.Empty,
                     sort = maxSort + 2,
                 };
@@ -1682,7 +1699,7 @@ namespace v2rayN.Handler
                 //Global
                 var item1 = new RoutingItem()
                 {
-                    remarks = "全局(Global)",
+                    remarks = $"{ver}全局(Global)",
                     url = string.Empty,
                     sort = maxSort + 3,
                 };
