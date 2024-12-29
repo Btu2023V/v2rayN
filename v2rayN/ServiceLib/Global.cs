@@ -76,7 +76,7 @@
         public const int MaxPort = 65536;
         public const string DelayUnit = "";
         public const string SpeedUnit = "";
-        public const int MinFontSize = 10;
+        public const int MinFontSize = 8;
         public const string RebootAs = "rebootas";
         public const string AvaAssets = "avares://v2rayN/Assets/";
 
@@ -200,7 +200,7 @@
         public static readonly List<string> Languages = new() { "zh-Hans", "zh-Hant", "en", "fa-Ir", "ru", "hu" };
         public static readonly List<string> Alpns = new() { "h3", "h2", "http/1.1", "h3,h2", "h2,http/1.1", "h3,h2,http/1.1", "" };
         public static readonly List<string> LogLevels = new() { "debug", "info", "warning", "error", "none" };
-        public static readonly List<string> InboundTags = new() { "socks", "socks2" };
+        public static readonly List<string> InboundTags = new() { "socks", "socks2", "socks3" };
         public static readonly List<string> RuleProtocols = new() { "http", "tls", "bittorrent" };
         public static readonly List<string> RuleNetworks = new() { "", "tcp", "udp", "tcp,udp" };
         public static readonly List<string> destOverrideProtocols = ["http", "tls", "quic", "fakedns", "fakedns+others"];

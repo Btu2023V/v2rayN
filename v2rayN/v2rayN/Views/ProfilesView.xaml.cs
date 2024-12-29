@@ -1,7 +1,6 @@
 using MaterialDesignThemes.Wpf;
 using ReactiveUI;
 using Splat;
-using System;
 using System.Reactive.Disposables;
 using System.Windows;
 using System.Windows.Controls;
@@ -224,12 +223,6 @@ namespace v2rayN.Views
             {
                 switch (e.Key)
                 {
-                    case Key.V:
-                        var clipboardData = WindowsUtils.GetClipboardData();
-                        var service = Locator.Current.GetService<MainWindowViewModel>();
-                        if (service != null) _ = service.AddServerViaClipboardAsync(clipboardData);
-                        break;
-
                     case Key.A:
                         menuSelectAll_Click(null, null);
                         break;
@@ -342,10 +335,7 @@ namespace v2rayN.Views
                         }
                         if (item.Name.ToLower().StartsWith("to"))
                         {
-                            if (!_config.GuiItem.EnableStatistics)
-                            {
-                                item2.Visibility = Visibility.Hidden;
-                            }
+                            item2.Visibility = _config.GuiItem.EnableStatistics ? Visibility.Visible : Visibility.Hidden;
                         }
                     }
                 }
