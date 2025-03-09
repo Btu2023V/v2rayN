@@ -764,7 +764,7 @@
                             x:Name="cmbcurrentFontFamily"
                             Grid.Row="15"
                             Grid.Column="1"
-                            Width="200"
+                            Width="300"
                             Margin="{StaticResource Margin8}"
                             MaxDropDownHeight="1000"
                             Style="{StaticResource DefComboBox}" />
@@ -776,23 +776,22 @@
                             Style="{StaticResource ToolbarTextBlock}"
                             Text="{x:Static resx:ResUI.TbSettingsCurrentFontFamilyTip}"
                             TextWrapping="Wrap" />
-                        <!--
+
                         <TextBlock
                             Grid.Row="16"
                             Grid.Column="0"
                             Margin="{StaticResource Margin8}"
                             VerticalAlignment="Center"
                             Style="{StaticResource ToolbarTextBlock}"
-                            Text="{x:Static resx:ResUI.TbSettingsSpeedTestPageSize}" />
-                        <TextBox
-                            x:Name="txtSpeedTestPageSize"
+                            Text="{x:Static resx:ResUI.TbSettingsMixedConcurrencyCount}" />
+                        <ComboBox
+                            x:Name="cmbMixedConcurrencyCount"
                             Grid.Row="16"
                             Grid.Column="1"
                             Width="200"
                             Margin="{StaticResource Margin8}"
-                            HorizontalAlignment="Left"
-                            Style="{StaticResource DefTextBox}" />
-                        -->
+                            Style="{StaticResource DefComboBox}" />
+
                         <TextBlock
                             Grid.Row="17"
                             Grid.Column="0"
@@ -868,7 +867,7 @@
                             x:Name="cmbMainGirdOrientation"
                             Grid.Row="21"
                             Grid.Column="1"
-                            Width="300"
+                            Width="200"
                             Margin="{StaticResource Margin8}"
                             Style="{StaticResource DefComboBox}" />
 

@@ -60,6 +60,9 @@ namespace ServiceLib.ViewModels
         [Reactive]
         public int SystemProxySelected { get; set; }
 
+        [Reactive]
+        public bool BlSystemProxyPacVisible { get; set; }
+
         #endregion System Proxy
 
         #region UI
@@ -96,6 +99,7 @@ namespace ServiceLib.ViewModels
             SelectedRouting = new();
             SelectedServer = new();
             RunningServerToolTipText = "-";
+            BlSystemProxyPacVisible = Utils.IsWindows();
 
             if (_config.TunModeItem.EnableTun && AllowEnableTun())
             {
@@ -297,7 +301,7 @@ namespace ServiceLib.ViewModels
             {
                 return;
             }
-            if (Utils.IsNullOrEmpty(SelectedServer.ID))
+            if (SelectedServer.ID.IsNullOrEmpty())
             {
                 return;
             }
@@ -311,6 +315,8 @@ namespace ServiceLib.ViewModels
             {
                 return;
             }
+
+            _updateView?.Invoke(EViewAction.DispatcherServerAvailability, ResUI.Speedtesting);
 
             var msg = await (new UpdateService()).RunAvailabilityCheck();
 

@@ -123,7 +123,7 @@ namespace ServiceLib.Services
                 var url = item.Url.TrimEx();
                 var userAgent = item.UserAgent.TrimEx();
                 var hashCode = $"{item.Remarks}->";
-                if (Utils.IsNullOrEmpty(id) || Utils.IsNullOrEmpty(url) || (Utils.IsNotEmpty(subId) && item.Id != subId))
+                if (id.IsNullOrEmpty() || url.IsNullOrEmpty() || (subId.IsNotEmpty() && item.Id != subId))
                 {
                     //_updateFunc?.Invoke(false, $"{hashCode}{ResUI.MsgNoValidSubscription}");
                     continue;
@@ -149,9 +149,9 @@ namespace ServiceLib.Services
                 //one url
                 url = Utils.GetPunycode(url);
                 //convert
-                if (Utils.IsNotEmpty(item.ConvertTarget))
+                if (item.ConvertTarget.IsNotEmpty())
                 {
-                    var subConvertUrl = Utils.IsNullOrEmpty(config.ConstItem.SubConvertUrl) ? Global.SubConvertUrls.FirstOrDefault() : config.ConstItem.SubConvertUrl;
+                    var subConvertUrl = config.ConstItem.SubConvertUrl.IsNullOrEmpty() ? Global.SubConvertUrls.FirstOrDefault() : config.ConstItem.SubConvertUrl;
                     url = string.Format(subConvertUrl!, Utils.UrlEncode(url));
                     if (!url.Contains("target="))
                     {
@@ -163,15 +163,15 @@ namespace ServiceLib.Services
                     }
                 }
                 var result = await downloadHandle.TryDownloadString(url, blProxy, userAgent);
-                if (blProxy && Utils.IsNullOrEmpty(result))
+                if (blProxy && result.IsNullOrEmpty())
                 {
                     result = await downloadHandle.TryDownloadString(url, false, userAgent);
                 }
 
                 //more url
-                if (Utils.IsNullOrEmpty(item.ConvertTarget) && Utils.IsNotEmpty(item.MoreUrl.TrimEx()))
+                if (item.ConvertTarget.IsNullOrEmpty() && item.MoreUrl.TrimEx().IsNotEmpty())
                 {
-                    if (Utils.IsNotEmpty(result) && Utils.IsBase64String(result))
+                    if (result.IsNotEmpty() && Utils.IsBase64String(result))
                     {
                         result = Utils.Base64Decode(result);
                     }
@@ -180,17 +180,17 @@ namespace ServiceLib.Services
                     foreach (var it in lstUrl)
                     {
                         var url2 = Utils.GetPunycode(it);
-                        if (Utils.IsNullOrEmpty(url2))
+                        if (url2.IsNullOrEmpty())
                         {
                             continue;
                         }
 
                         var result2 = await downloadHandle.TryDownloadString(url2, blProxy, userAgent);
-                        if (blProxy && Utils.IsNullOrEmpty(result2))
+                        if (blProxy && result2.IsNullOrEmpty())
                         {
                             result2 = await downloadHandle.TryDownloadString(url2, false, userAgent);
                         }
-                        if (Utils.IsNotEmpty(result2))
+                        if (result2.IsNotEmpty())
                         {
                             if (Utils.IsBase64String(result2))
                             {
@@ -204,7 +204,7 @@ namespace ServiceLib.Services
                     }
                 }
 
-                if (Utils.IsNullOrEmpty(result))
+                if (result.IsNullOrEmpty())
                 {
                     _updateFunc?.Invoke(false, $"{hashCode}{ResUI.MsgSubscriptionDecodingFailed}");
                 }
@@ -237,8 +237,8 @@ namespace ServiceLib.Services
 
         public async Task UpdateGeoFileAll(Config config, Action<bool, string> updateFunc)
         {
-            await UpdateGeoFile("geosite", config, updateFunc);
-            await UpdateGeoFile("geoip", config, updateFunc);
+            await UpdateGeoFiles(config, updateFunc);
+            await UpdateOtherFiles(config, updateFunc);
             await UpdateSrsFileAll(config, updateFunc);
             _updateFunc?.Invoke(true, string.Format(ResUI.MsgDownloadGeoFileSuccessfully, "geo"));
         }
@@ -287,7 +287,7 @@ namespace ServiceLib.Services
             {
                 var url = coreInfo?.ReleaseApiUrl;
                 var result = await downloadHandle.TryDownloadString(url, true, Global.AppName);
-                if (Utils.IsNullOrEmpty(result))
+                if (result.IsNullOrEmpty())
                 {
                     return new RetResult(false, "");
                 }
@@ -427,22 +427,32 @@ namespace ServiceLib.Services
         {
             if (Utils.IsWindows())
             {
-                //Check for standalone windows .Net version
-                if (coreInfo?.CoreType == ECoreType.v2rayN && RuntimeInformation.ProcessArchitecture == Architecture.X64)
-                {
-                    var runtimes = await Utils.GetCliWrapOutput("dotnet", "--list-runtimes");
-                    if (runtimes == null || runtimes.Contains("Microsoft.WindowsDesktop.App 8") == false)
-                    {
-                        return coreInfo?.DownloadUrlWin64?.Replace(".zip", "-SelfContained.zip");
-                    }
-                }
-
-                return RuntimeInformation.ProcessArchitecture switch
+                var url = RuntimeInformation.ProcessArchitecture switch
                 {
                     Architecture.Arm64 => coreInfo?.DownloadUrlWinArm64,
                     Architecture.X64 => coreInfo?.DownloadUrlWin64,
                     _ => null,
                 };
+
+                if (coreInfo?.CoreType != ECoreType.v2rayN)
+                {
+                    return url;
+                }
+
+                //Check for standalone windows .Net version
+                if (File.Exists(Path.Combine(Utils.GetBaseDirectory(), "wpfgfx_cor3.dll"))
+                    && File.Exists(Path.Combine(Utils.GetBaseDirectory(), "D3DCompiler_47_cor3.dll")))
+                {
+                    return url?.Replace(".zip", "-SelfContained.zip");
+                }
+
+                //Check for avalonia desktop windows version
+                if (File.Exists(Path.Combine(Utils.GetBaseDirectory(), "libHarfBuzzSharp.dll")))
+                {
+                    return url?.Replace(".zip", "-desktop.zip");
+                }
+
+                return url;
             }
             else if (Utils.IsLinux())
             {
@@ -462,14 +472,14 @@ namespace ServiceLib.Services
                     _ => null,
                 };
             }
-            return null;
+            return await Task.FromResult("");
         }
 
         #endregion CheckUpdate private
 
         #region Geo private
 
-        private async Task UpdateGeoFile(string geoName, Config config, Action<bool, string> updateFunc)
+        private async Task UpdateGeoFiles(Config config, Action<bool, string> updateFunc)
         {
             _updateFunc = updateFunc;
 
@@ -477,11 +487,28 @@ namespace ServiceLib.Services
                 ? Global.GeoUrl
                 : config.ConstItem.GeoSourceUrl;
 
-            var fileName = $"{geoName}.dat";
-            var targetPath = Utils.GetBinPath($"{fileName}");
-            var url = string.Format(geoUrl, geoName);
+            List<string> files = ["geosite", "geoip"];
+            foreach (var geoName in files)
+            {
+                var fileName = $"{geoName}.dat";
+                var targetPath = Utils.GetBinPath($"{fileName}");
+                var url = string.Format(geoUrl, geoName);
 
-            await DownloadGeoFile(url, fileName, targetPath, updateFunc);
+                await DownloadGeoFile(url, fileName, targetPath, updateFunc);
+            }
+        }
+
+        private async Task UpdateOtherFiles(Config config, Action<bool, string> updateFunc)
+        {
+            _updateFunc = updateFunc;
+
+            foreach (var url in Global.OtherGeoUrls)
+            {
+                var fileName = Path.GetFileName(url);
+                var targetPath = Utils.GetBinPath($"{fileName}");
+
+                await DownloadGeoFile(url, fileName, targetPath, updateFunc);
+            }
         }
 
         private async Task UpdateSrsFileAll(Config config, Action<bool, string> updateFunc)
